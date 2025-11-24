@@ -6,5 +6,5 @@ from app.controllers.analysis_controller import analyze_controller
 router = APIRouter()
 
 @router.get("/analyze")
-def analyze(symbol: str):
-    return analyze_controller(symbol)
+def analyze(symbol: str, include_df: bool = False):
+    return analyze_controller(symbol, include_df)

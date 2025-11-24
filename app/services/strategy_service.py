@@ -7,7 +7,7 @@ from app.services.candle_service import fetch_candles
 from app.services.support_service import detect_supports
 import os
 
-def analyze_stock(symbol: str):
+def analyze_stock(symbol: str, include_df: bool = False):
     df = fetch_candles(symbol, period="5y", timeframe="1D")
 
         # ----------------------------
@@ -22,28 +22,36 @@ def analyze_stock(symbol: str):
     # print(f"Saved CSV to: {csv_path}")
     # ----------------------------
 
-    supports = detect_supports(df)
-    rsi_info = compute_rsi_support(df)
-    fib_info = compute_fibonacci_levels(df)
+    result = {"symbol": symbol}
 
-    # Final signal (simple logic for now)
+    # Conditional raw DF
+    if include_df:
+        df_fixed = df.reset_index()
+        df_fixed["Date"] = df_fixed["Date"].dt.strftime("%Y-%m-%d")   # <-- FIX HERE
+
+        result["df_data"] = df_fixed[["Date", "Open", "High", "Low", "Close"]].rename(
+            columns={
+                "Date": "time",
+                "Open": "open",
+                "High": "high",
+                "Low": "low",
+                "Close": "close"
+            }
+        ).to_dict(orient="records")
+    # Always include these
+    result["supports"] = detect_supports(df.copy())
+    result["rsi"] = compute_rsi_support(df.copy())
+    result["fibonacci"] = compute_fibonacci_levels(df.copy())
+
+    # Final scoring
     score = 0
-    if len(supports) > 0:
+    if len(result["supports"]) > 0:
         score += 1
-    if rsi_info["is_rsi_support"]:
+    if result["rsi"]["is_rsi_support"]:
         score += 1
-    if fib_info["fib_hit"] is not None:
+    if result["fibonacci"]["fib_hit"] is not None:
         score += 1
 
-    if score >= 2:
-        final_signal = "BUY"
-    else:
-        final_signal = "WAIT"
+    result["final_signal"] = "BUY" if score >= 2 else "WAIT"
 
-    return {
-        "symbol": symbol,
-        "supports": supports,
-        "rsi": rsi_info,
-        "fibonacci": fib_info,
-        "final_signal": final_signal
-    }
+    return result
