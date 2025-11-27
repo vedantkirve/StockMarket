@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 
 
-def fetch_candles(symbol: str, period="5y", timeframe="1D"):
+def fetch_candles(symbol: str, period="10y", timeframe="1D"):
     """
     Always fetch DAILY candles for accuracy.
     Weekly candles will be computed manually.

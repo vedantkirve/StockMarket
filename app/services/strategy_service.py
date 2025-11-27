@@ -8,7 +8,7 @@ from app.services.support_service import detect_supports
 import os
 
 def analyze_stock(symbol: str, include_df: bool = False):
-    df = fetch_candles(symbol, period="5y", timeframe="1D")
+    df = fetch_candles(symbol, period="10y", timeframe="1D")
 
         # ----------------------------
     # Save CSV for debugging
